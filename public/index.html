@@ -1,18 +1,453 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <meta
-    name="description"
-    content="Guidance & Counselling React App"
-  />
-  <title>Guidance & Counselling App</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guidance & Counselling Quiz</title>
+<style>
+.App {
+  max-width: 800px;
+  margin: auto;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #ccc;
+}
+header h1 {
+  text-align: center;
+  color: #003366;
+  margin-bottom: 25px;
+}
+button {
+  background-color: #005a9c;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  margin: 8px 5px 8px 0;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+button:hover {
+  background-color: #003f6b;
+}
+.questions .options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.next-btn {
+  margin-top: 20px;
+  background-color: #28a745;
+}
+.next-btn:hover {
+  background-color: #1e7e34;
+}
+.back-btn {
+  background-color: #6c757d;
+}
+.back-btn:hover {
+  background-color: #5a6268;
+}
+.scenario-selection ul {
+  list-style: none;
+  padding: 0;
+}
+.scenario-selection li {
+  margin: 10px 0;
+}
+footer {
+  text-align: center;
+  margin-top: 20px;
+  color: #555;
+}
+</style>
 </head>
 <body>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
+<div class="App">
+  <header>
+    <h1>Comparative Study Of Guidance & Counselling Services On Academics</h1>
+  </header>
+  <div id="quiz-container"></div>
+  <footer>© 2025 Guidance & Counselling Study</footer>
+</div>
+
+<script>
+// ---------------- FULL SCENARIOS DATA ----------------
+const scenarios = [
+  {
+    id:1,
+    title:"Academic Burnout & Depression",
+    summary:"Student feels overwhelmed, exhausted, and unmotivated due to excessive academic pressure and personal issues.",
+    questions:[
+      {id:1, question:"How often do you feel exhausted from studying?", options:[{text:"Almost every day",next:2},{text:"Sometimes",next:3},{text:"Rarely",next:4},{text:"Never",next:5}]},
+      {id:2, question:"Do you find it hard to concentrate on your work?", options:[{text:"Yes, always",next:6},{text:"Sometimes",next:7},{text:"No",next:8},{text:"Not sure",next:9}]},
+      {id:3, question:"Do you feel motivated to complete your tasks?", options:[{text:"Not at all",next:6},{text:"Sometimes",next:7},{text:"Mostly yes",next:8},{text:"Completely",next:10}]},
+      {id:4, question:"Do you manage your time effectively?", options:[{text:"No, often procrastinate",next:6},{text:"Sometimes",next:7},{text:"Yes, usually",next:8},{text:"Always",next:10}]},
+      {id:5, question:"Are you satisfied with your current study habits?", options:[{text:"No",next:6},{text:"Somewhat",next:7},{text:"Yes",next:11},{text:"Completely",next:10}]},
+      {id:6, question:"Do you often feel anxious about exams?", options:[{text:"Yes, very much",next:12},{text:"Sometimes",next:13},{text:"Rarely",next:14},{text:"No",next:15}]},
+      {id:7, question:"Do you seek help when struggling academically?", options:[{text:"Never",next:12},{text:"Sometimes",next:13},{text:"Often",next:14},{text:"Always",next:15}]},
+      {id:8, question:"Are you able to maintain balance between studies and relaxation?", options:[{text:"Not at all",next:12},{text:"Sometimes",next:13},{text:"Mostly yes",next:14},{text:"Always",next:15}]},
+      {id:9, question:"Do you find your workload manageable?", options:[{text:"No",next:12},{text:"Sometimes",next:13},{text:"Yes",next:14},{text:"Definitely",next:15}]},
+      {id:10, question:"Do you feel supported by your peers and teachers?", options:[{text:"No",next:12},{text:"Somewhat",next:13},{text:"Yes",next:14},{text:"Strongly",next:15}]},
+      {id:11, question:"Are you confident in your academic skills?", options:[{text:"No",next:12},{text:"Somewhat",next:13},{text:"Yes",next:14},{text:"Very confident",next:15}]},
+      {id:12, question:"Do you feel hopeless or helpless about academics?", options:[{text:"Yes",next:16},{text:"Sometimes",next:17},{text:"Rarely",next:18},{text:"No",next:19}]},
+      {id:13, question:"Would talking to a counsellor help you?", options:[{text:"Definitely",next:16},{text:"Maybe",next:17},{text:"Not sure",next:18},{text:"No",next:19}]},
+      {id:14, question:"Do you have strategies to manage stress?", options:[{text:"No",next:16},{text:"Some",next:17},{text:"Yes",next:18},{text:"Very effective ones",next:19}]},
+      {id:15, question:"Do you believe you can improve your academic performance?", options:[{text:"No",next:16},{text:"Maybe",next:17},{text:"Yes",next:18},{text:"Definitely",next:19}]},
+      {id:16, question:"Do you experience physical symptoms like headaches or fatigue?", options:[{text:"Frequently",next:20},{text:"Sometimes",next:20},{text:"Rarely",next:20},{text:"Never",next:20}]},
+      {id:17, question:"How do you cope with academic pressure?", options:[{text:"Avoid tasks",next:20},{text:"Seek help",next:20},{text:"Work harder",next:20},{text:"Stay organized",next:20}]},
+      {id:18, question:"Do you maintain social connections despite academic stress?", options:[{text:"No, isolated",next:20},{text:"Minimal",next:20},{text:"Somewhat",next:20},{text:"Yes, actively",next:20}]},
+      {id:19, question:"Are you able to set realistic academic goals?", options:[{text:"No",next:20},{text:"Sometimes",next:20},{text:"Often",next:20},{text:"Always",next:20}]},
+      {id:20, question:"What best describes your current academic situation?", options:[{text:"Completely overwhelmed",next:101},{text:"Struggling but managing",next:102},{text:"Some challenges",next:103},{text:"Doing well",next:104},{text:"Excelling",next:105},{text:"Need major intervention",next:106},{text:"Moderate support needed",next:107},{text:"Minor adjustments",next:108},{text:"Thriving",next:109},{text:"Perfect balance",next:110},{text:"Severe crisis",next:111},{text:"Recovery in progress",next:112}]}
+    ],
+    outcomes:{
+      101:{title:"Severe Academic Burnout",description:"Severely burnt out, hopeless, overwhelmed with no motivation.",feelings:"Emotionally drained, anxious, disconnected, suicidal thoughts.",guidance:"Immediate crisis intervention, professional therapy, academic accommodations."},
+      102:{title:"High Academic Stress",description:"High stress levels affecting performance and wellbeing.",feelings:"Anxious, tired, frustrated, losing confidence.",guidance:"Stress management techniques, counseling, workload reduction."},
+      103:{title:"Moderate Academic Pressure",description:"Moderate stress but retain some motivation and hope.",feelings:"Tired but optimistic, some anxiety.",guidance:"Coping strategies, time management, peer support groups."},
+      104:{title:"Mild Academic Challenges",description:"Some pressure but generally coping well.",feelings:"Challenged but confident, manageable stress.",guidance:"Reinforce positive habits, self-care practices."},
+      105:{title:"Academic Success with Stress",description:"Performing well but experiencing stress.",feelings:"Accomplished but pressured, perfectionist tendencies.",guidance:"Balance achievement with wellbeing, realistic expectations."},
+      106:{title:"Academic Crisis",description:"Complete academic breakdown requiring immediate intervention.",feelings:"Hopeless, defeated, unable to function.",guidance:"Emergency support, medical evaluation, academic leave consideration."},
+      107:{title:"Academic Struggles",description:"Significant difficulties but potential for improvement.",feelings:"Discouraged but willing to try, seeking help.",guidance:"Comprehensive support plan, tutoring, counseling."},
+      108:{title:"Academic Adjustment Needed",description:"Minor issues that can be addressed with support.",feelings:"Slightly overwhelmed but motivated.",guidance:"Study skills training, organizational support."},
+      109:{title:"Academic Excellence",description:"Thriving academically with good balance.",feelings:"Confident, motivated, satisfied.",guidance:"Maintain current strategies, advanced goal setting."},
+      110:{title:"Perfect Academic Balance",description:"Optimal balance between academics and wellbeing.",feelings:"Content, energized, in control.",guidance:"Continue current approach, mentor others."},
+      111:{title:"Academic Emergency",description:"Severe crisis requiring immediate professional intervention.",feelings:"Desperate, hopeless, unable to cope.",guidance:"Crisis counseling, medical attention, safety planning."},
+      112:{title:"Academic Recovery",description:"On the path to recovery with ongoing support.",feelings:"Hopeful, determined, rebuilding confidence.",guidance:"Continued therapy, gradual academic reintegration."}
+    }
+  },
+  {
+    id:2,
+    title:"ADHD Challenges",
+    summary:"Student struggles with focus, hyperactivity, impulsiveness affecting academic performance.",
+    questions:[
+      {id:1, question:"Do you find it difficult to stay focused during lectures?", options:[{text:"Always",next:2},{text:"Often",next:3},{text:"Sometimes",next:4},{text:"Rarely",next:5}]},
+      {id:2, question:"Do you feel restless or fidgety during study time?", options:[{text:"Yes, constantly",next:6},{text:"Sometimes",next:7},{text:"Rarely",next:8},{text:"No",next:9}]},
+      {id:3, question:"Do you get distracted easily?", options:[{text:"Always",next:6},{text:"Sometimes",next:7},{text:"Rarely",next:8},{text:"Never",next:9}]},
+      {id:4, question:"Do you finish tasks on time?", options:[{text:"Never",next:6},{text:"Sometimes",next:7},{text:"Often",next:8},{text:"Always",next:9}]},
+      {id:5, question:"Do you follow a consistent study schedule?", options:[{text:"No",next:6},{text:"Sometimes",next:7},{text:"Mostly",next:8},{text:"Yes",next:9}]},
+      {id:6, question:"Do you need frequent breaks during study sessions?", options:[{text:"Every 5-10 minutes",next:10},{text:"Every 15-20 minutes",next:11},{text:"Every 30-45 minutes",next:12},{text:"Every hour or more",next:13}]},
+      {id:7, question:"Do you struggle with organization?", options:[{text:"Completely disorganized",next:10},{text:"Somewhat organized",next:11},{text:"Mostly organized",next:12},{text:"Very organized",next:13}]},
+      {id:8, question:"Do you find it hard to start tasks?", options:[{text:"Always procrastinate",next:10},{text:"Often delay",next:11},{text:"Sometimes hesitate",next:12},{text:"Start immediately",next:13}]},
+      {id:9, question:"Do you feel frustrated with unfinished work?", options:[{text:"Constantly frustrated",next:10},{text:"Often frustrated",next:11},{text:"Sometimes frustrated",next:12},{text:"Rarely frustrated",next:13}]},
+      {id:10, question:"Do you have trouble following instructions?", options:[{text:"Always confused",next:14},{text:"Often need clarification",next:15},{text:"Sometimes unclear",next:16},{text:"Follow well",next:17}]},
+      {id:11, question:"Do you forget deadlines?", options:[{text:"Always forget",next:14},{text:"Often forget",next:15},{text:"Sometimes forget",next:16},{text:"Rarely forget",next:17}]},
+      {id:12, question:"Do you interrupt others during conversations?", options:[{text:"Frequently",next:14},{text:"Sometimes",next:15},{text:"Rarely",next:16},{text:"Never",next:17}]},
+      {id:13, question:"Do you lose important items regularly?", options:[{text:"Daily",next:14},{text:"Weekly",next:15},{text:"Monthly",next:16},{text:"Rarely",next:17}]},
+      {id:14, question:"Do you find structured schedules helpful?", options:[{text:"No, too restrictive",next:18},{text:"Sometimes helpful",next:19},{text:"Usually helpful",next:20},{text:"Very helpful",next:20}]},
+      {id:15, question:"Are you able to ask for help when overwhelmed?", options:[{text:"Never ask",next:18},{text:"Rarely ask",next:19},{text:"Sometimes ask",next:20},{text:"Often ask",next:20}]},
+      {id:16, question:"Do you manage distractions effectively?", options:[{text:"No control",next:18},{text:"Little control",next:19},{text:"Some control",next:20},{text:"Good control",next:20}]},
+      {id:17, question:"Do you feel confident managing your tasks?", options:[{text:"No confidence",next:18},{text:"Low confidence",next:19},{text:"Moderate confidence",next:20},{text:"High confidence",next:20}]},
+      {id:18, question:"How do you handle time management?", options:[{text:"Poorly",next:20},{text:"With difficulty",next:20},{text:"Adequately",next:20},{text:"Well",next:20}]},
+      {id:19, question:"Do you use any ADHD management strategies?", options:[{text:"None",next:20},{text:"Few",next:20},{text:"Some",next:20},{text:"Many",next:20}]},
+      {id:20, question:"What best describes your ADHD management?", options:[{text:"Severely impaired",next:201},{text:"Significantly challenged",next:202},{text:"Moderately affected",next:203},{text:"Mildly impacted",next:204},{text:"Well managed",next:205},{text:"Excellent control",next:206},{text:"Needs medication",next:207},{text:"Needs therapy",next:208},{text:"Needs accommodations",next:209},{text:"Thriving with support",next:210},{text:"Independent success",next:211},{text:"Role model",next:212}]}
+    ],
+    outcomes:{
+      201:{title:"Severe ADHD Impact",description:"ADHD symptoms severely impair daily functioning and academics.",feelings:"Frustrated, overwhelmed, discouraged, hopeless.",guidance:"Immediate medical evaluation, medication consideration, intensive support."},
+      202:{title:"Significant ADHD Challenges",description:"ADHD significantly affects focus, organization, and productivity.",feelings:"Stressed, anxious, struggling to keep up.",guidance:"Comprehensive treatment plan, accommodations, structured support."},
+      203:{title:"Moderate ADHD Challenges",description:"Some difficulties but manageable with proper support.",feelings:"Sometimes restless but able to focus with effort.",guidance:"Organizational skills training, regular check-ins, coping strategies."},
+      204:{title:"Mild ADHD Symptoms",description:"Minor disruption but good progress with management.",feelings:"Mostly in control, occasional challenges.",guidance:"Reinforce coping techniques, positive habits, self-monitoring."},
+      205:{title:"Well-managed ADHD",description:"Effectively manages symptoms with good strategies.",feelings:"Confident, organized, motivated, successful.",guidance:"Support self-management, goal planning, advanced strategies."},
+      206:{title:"Excellent ADHD Control",description:"Outstanding management of ADHD symptoms.",feelings:"Empowered, focused, achieving goals.",guidance:"Mentor others, share strategies, continue excellence."},
+      207:{title:"ADHD Requiring Medication",description:"ADHD symptoms require medical intervention.",feelings:"Frustrated by inability to focus despite effort.",guidance:"Medical consultation, medication trial, monitoring."},
+      208:{title:"ADHD Requiring Therapy",description:"ADHD challenges need therapeutic intervention.",feelings:"Overwhelmed, need professional guidance.",guidance:"Behavioral therapy, skill building, emotional support."},
+      209:{title:"ADHD Needing Accommodations",description:"ADHD requires academic and environmental accommodations.",feelings:"Capable but need different approach.",guidance:"Academic accommodations, environmental modifications."},
+      210:{title:"ADHD Thriving with Support",description:"ADHD well-managed through comprehensive support system.",feelings:"Supported, successful, confident.",guidance:"Maintain support network, continue current strategies."},
+      211:{title:"ADHD Independent Success",description:"ADHD managed independently with self-developed strategies.",feelings:"Proud, self-reliant, accomplished.",guidance:"Share strategies, mentor others, continue growth."},
+      212:{title:"ADHD Role Model",description:"Exemplary management of ADHD, inspiring others.",feelings:"Inspiring, confident, helping others.",guidance:"Leadership opportunities, advocacy, continued excellence."}
+    }
+  },
+  {
+    id:3,
+    title:"Trauma Impact on Academic Performance",
+    summary:"Student has experienced trauma affecting emotional wellbeing and academic focus.",
+    questions:[
+      {id:1, question:"Do you find yourself distracted or upset while studying?", options:[{text:"Often",next:2},{text:"Sometimes",next:3},{text:"Rarely",next:4},{text:"Never",next:5}]},
+      {id:2, question:"Do you avoid certain subjects or tasks due to trauma?", options:[{text:"Yes, many",next:6},{text:"Some",next:7},{text:"Few",next:8},{text:"None",next:9}]},
+      {id:3, question:"Do you struggle with memory or focus?", options:[{text:"Always",next:6},{text:"Often",next:7},{text:"Sometimes",next:8},{text:"Rarely",next:9}]},
+      {id:4, question:"Do you feel anxious during exams?", options:[{text:"Severely anxious",next:6},{text:"Moderately anxious",next:7},{text:"Mildly anxious",next:8},{text:"Not anxious",next:9}]},
+      {id:5, question:"Do you have difficulty completing tasks?", options:[{text:"Always struggle",next:6},{text:"Often struggle",next:7},{text:"Sometimes struggle",next:8},{text:"Rarely struggle",next:9}]},
+      {id:6, question:"Do you avoid social interactions at school?", options:[{text:"Completely avoid",next:10},{text:"Often avoid",next:11},{text:"Sometimes avoid",next:12},{text:"Rarely avoid",next:13}]},
+      {id:7, question:"Do you feel emotionally drained?", options:[{text:"Constantly drained",next:10},{text:"Often drained",next:11},{text:"Sometimes drained",next:12},{text:"Rarely drained",next:13}]},
+      {id:8, question:"Do you have nightmares or flashbacks?", options:[{text:"Frequently",next:10},{text:"Sometimes",next:11},{text:"Rarely",next:12},{text:"Never",next:13}]},
+      {id:9, question:"Do you avoid tasks that remind you of trauma?", options:[{text:"Many triggers",next:10},{text:"Some triggers",next:11},{text:"Few triggers",next:12},{text:"No triggers",next:13}]},
+      {id:10, question:"Do you struggle with concentration?", options:[{text:"Severely impaired",next:14},{text:"Moderately impaired",next:15},{text:"Mildly impaired",next:16},{text:"Not impaired",next:17}]},
+      {id:11, question:"Do you experience emotional instability?", options:[{text:"Frequent mood swings",next:14},{text:"Sometimes unstable",next:15},{text:"Occasionally unstable",next:16},{text:"Emotionally stable",next:17}]},
+      {id:12, question:"Do you have sleep disturbances?", options:[{text:"Severe insomnia",next:14},{text:"Frequent sleep issues",next:15},{text:"Occasional sleep problems",next:16},{text:"Good sleep",next:17}]},
+      {id:13, question:"Do you feel hypervigilant or on edge?", options:[{text:"Constantly alert",next:14},{text:"Often alert",next:15},{text:"Sometimes alert",next:16},{text:"Relaxed",next:17}]},
+      {id:14, question:"Do you have a trusted person to talk about your feelings?", options:[{text:"No one",next:18},{text:"One person",next:19},{text:"Few people",next:20},{text:"Many people",next:20}]},
+      {id:15, question:"Do you use any coping strategies to manage stress?", options:[{text:"No strategies",next:18},{text:"Few strategies",next:19},{text:"Some strategies",next:20},{text:"Many strategies",next:20}]},
+      {id:16, question:"Do you feel supported by family or friends?", options:[{text:"No support",next:18},{text:"Little support",next:19},{text:"Moderate support",next:20},{text:"Strong support",next:20}]},
+      {id:17, question:"Do you feel resilient after challenges?", options:[{text:"Not resilient",next:18},{text:"Low resilience",next:19},{text:"Moderate resilience",next:20},{text:"High resilience",next:20}]},
+      {id:18, question:"How do you handle trauma triggers?", options:[{text:"Avoid completely",next:20},{text:"Cope poorly",next:20},{text:"Cope adequately",next:20},{text:"Cope well",next:20}]},
+      {id:19, question:"Do you seek professional help for trauma?", options:[{text:"Never",next:20},{text:"Rarely",next:20},{text:"Sometimes",next:20},{text:"Regularly",next:20}]},
+      {id:20, question:"What best describes your trauma recovery?", options:[{text:"Severely impacted",next:301},{text:"Significantly affected",next:302},{text:"Moderately affected",next:303},{text:"Mildly affected",next:304},{text:"Recovering well",next:305},{text:"Thriving despite trauma",next:306},{text:"Need crisis intervention",next:307},{text:"Need intensive therapy",next:308},{text:"Need support group",next:309},{text:"Making good progress",next:310},{text:"Strong recovery",next:311},{text:"Trauma survivor leader",next:312}]}
+    ],
+    outcomes:{
+      301:{title:"Severe Trauma Impact",description:"Trauma severely affects emotional health and academics.",feelings:"Isolated, anxious, unable to focus, hopeless.",guidance:"Immediate trauma-informed care, crisis intervention, safety planning."},
+      302:{title:"Significant Trauma Impact",description:"Trauma significantly affects daily functioning and learning.",feelings:"Vulnerable, struggling, need constant support.",guidance:"Intensive therapy, academic accommodations, trauma-informed support."},
+      303:{title:"Moderate Trauma Impact",description:"Trauma affects but some support and coping exist.",feelings:"Vulnerable but capable, some hope.",guidance:"Regular therapy, support networks, gradual skill development."},
+      304:{title:"Mild Trauma Effects",description:"Some trauma-related symptoms but steady academics.",feelings:"Mostly stable, occasional triggers.",guidance:"Reinforce resilience, healthy coping strategies, monitoring."},
+      305:{title:"Trauma Recovery in Progress",description:"Actively working through trauma with good progress.",feelings:"Hopeful, determined, healing.",guidance:"Continue therapy, celebrate progress, build confidence."},
+      306:{title:"Thriving Despite Trauma",description:"Successfully managing trauma while excelling academically.",feelings:"Empowered, resilient, inspiring.",guidance:"Support continued growth, share story, mentor others."},
+      307:{title:"Trauma Crisis",description:"Trauma causing severe crisis requiring immediate intervention.",feelings:"Desperate, unsafe, unable to function.",guidance:"Crisis counseling, safety planning, emergency support."},
+      308:{title:"Trauma Requiring Intensive Therapy",description:"Trauma needs specialized therapeutic intervention.",feelings:"Overwhelmed, need professional trauma therapy.",guidance:"Trauma-focused therapy, EMDR, specialized treatment."},
+      309:{title:"Trauma Support Group Needed",description:"Trauma recovery would benefit from peer support.",feelings:"Isolated, need connection with others.",guidance:"Support groups, peer connections, community resources."},
+      310:{title:"Trauma Recovery Progress",description:"Making steady progress in trauma recovery.",feelings:"Hopeful, supported, moving forward.",guidance:"Continue current treatment, celebrate milestones."},
+      311:{title:"Strong Trauma Recovery",description:"Strong recovery from trauma with excellent coping.",feelings:"Empowered, confident, resilient.",guidance:"Maintain recovery, support others, continued growth."},
+      312:{title:"Trauma Survivor Leader",description:"Exemplary recovery, inspiring and helping others.",feelings:"Inspiring, strong, helping others heal.",guidance:"Leadership opportunities, advocacy, continued excellence."}
+    }
+  },
+  {
+    id:4,
+    title:"Social Anxiety & Isolation",
+    summary:"Student experiences severe social anxiety affecting academic participation and peer relationships.",
+    questions:[
+      {id:1, question:"Do you feel anxious in social situations at school?", options:[{text:"Extremely anxious",next:2},{text:"Very anxious",next:3},{text:"Moderately anxious",next:4},{text:"Mildly anxious",next:5}]},
+      {id:2, question:"Do you avoid group activities or presentations?", options:[{text:"Always avoid",next:6},{text:"Often avoid",next:7},{text:"Sometimes avoid",next:8},{text:"Rarely avoid",next:9}]},
+      {id:3, question:"Do you worry about being judged by others?", options:[{text:"Constantly worried",next:6},{text:"Often worried",next:7},{text:"Sometimes worried",next:8},{text:"Rarely worried",next:9}]},
+      {id:4, question:"Do you have difficulty making friends?", options:[{text:"Extremely difficult",next:6},{text:"Very difficult",next:7},{text:"Somewhat difficult",next:8},{text:"Not difficult",next:9}]},
+      {id:5, question:"Do you feel comfortable speaking in class?", options:[{text:"Never comfortable",next:6},{text:"Rarely comfortable",next:7},{text:"Sometimes comfortable",next:8},{text:"Usually comfortable",next:9}]},
+      {id:6, question:"Do you experience physical symptoms in social situations?", options:[{text:"Severe symptoms",next:10},{text:"Moderate symptoms",next:11},{text:"Mild symptoms",next:12},{text:"No symptoms",next:13}]},
+      {id:7, question:"Do you avoid eye contact with others?", options:[{text:"Always avoid",next:10},{text:"Often avoid",next:11},{text:"Sometimes avoid",next:12},{text:"Rarely avoid",next:13}]},
+      {id:8, question:"Do you feel like others are watching you?", options:[{text:"Constantly feel watched",next:10},{text:"Often feel watched",next:11},{text:"Sometimes feel watched",next:12},{text:"Rarely feel watched",next:13}]},
+      {id:9, question:"Do you have trouble starting conversations?", options:[{text:"Never start conversations",next:10},{text:"Rarely start",next:11},{text:"Sometimes start",next:12},{text:"Often start",next:13}]},
+      {id:10, question:"Do you feel isolated from your peers?", options:[{text:"Completely isolated",next:14},{text:"Very isolated",next:15},{text:"Somewhat isolated",next:16},{text:"Not isolated",next:17}]},
+      {id:11, question:"Do you worry about embarrassing yourself?", options:[{text:"Constantly worried",next:14},{text:"Often worried",next:15},{text:"Sometimes worried",next:16},{text:"Rarely worried",next:17}]},
+      {id:12, question:"Do you avoid eating in public places?", options:[{text:"Always avoid",next:14},{text:"Often avoid",next:15},{text:"Sometimes avoid",next:16},{text:"Rarely avoid",next:17}]},
+      {id:13, question:"Do you feel comfortable in large groups?", options:[{text:"Extremely uncomfortable",next:14},{text:"Very uncomfortable",next:15},{text:"Somewhat uncomfortable",next:16},{text:"Comfortable",next:17}]},
+      {id:14, question:"Do you have any close friends you can confide in?", options:[{text:"No close friends",next:18},{text:"One friend",next:19},{text:"Few friends",next:20},{text:"Many friends",next:20}]},
+      {id:15, question:"Do you use any strategies to manage social anxiety?", options:[{text:"No strategies",next:18},{text:"Few strategies",next:19},{text:"Some strategies",next:20},{text:"Many strategies",next:20}]},
+      {id:16, question:"Do you feel supported by family regarding social anxiety?", options:[{text:"No support",next:18},{text:"Little support",next:19},{text:"Moderate support",next:20},{text:"Strong support",next:20}]},
+      {id:17, question:"Do you believe you can overcome social anxiety?", options:[{text:"No hope",next:18},{text:"Little hope",next:19},{text:"Some hope",next:20},{text:"Strong hope",next:20}]},
+      {id:18, question:"How do you handle social situations that make you anxious?", options:[{text:"Avoid completely",next:20},{text:"Cope poorly",next:20},{text:"Cope adequately",next:20},{text:"Cope well",next:20}]},
+      {id:19, question:"Do you seek help for social anxiety?", options:[{text:"Never",next:20},{text:"Rarely",next:20},{text:"Sometimes",next:20},{text:"Regularly",next:20}]},
+      {id:20, question:"What best describes your social anxiety situation?", options:[{text:"Severely debilitating",next:401},{text:"Significantly limiting",next:402},{text:"Moderately affecting",next:403},{text:"Mildly affecting",next:404},{text:"Managing well",next:405},{text:"Overcoming challenges",next:406},{text:"Need crisis support",next:407},{text:"Need therapy",next:408},{text:"Need social skills training",next:409},{text:"Making progress",next:410},{text:"Strong improvement",next:411},{text:"Social confidence leader",next:412}]}
+    ],
+    outcomes:{
+      401:{title:"Severe Social Anxiety",description:"Social anxiety severely impairs daily functioning and academics.",feelings:"Isolated, terrified, unable to participate.",guidance:"Immediate therapy, gradual exposure, academic accommodations."},
+      402:{title:"Significant Social Anxiety",description:"Social anxiety significantly limits social and academic participation.",feelings:"Very anxious, avoiding most social situations.",guidance:"Intensive therapy, social skills training, support groups."},
+      403:{title:"Moderate Social Anxiety",description:"Social anxiety moderately affects social interactions.",feelings:"Anxious but some social connections exist.",guidance:"Cognitive behavioral therapy, gradual exposure, peer support."},
+      404:{title:"Mild Social Anxiety",description:"Some social anxiety but manageable with support.",feelings:"Occasionally anxious, mostly functional.",guidance:"Anxiety management techniques, confidence building."},
+      405:{title:"Managing Social Anxiety",description:"Successfully managing social anxiety with good strategies.",feelings:"Confident in coping, making progress.",guidance:"Continue current strategies, gradual challenges."},
+      406:{title:"Overcoming Social Anxiety",description:"Actively working through social anxiety with success.",feelings:"Hopeful, determined, growing confidence.",guidance:"Celebrate progress, continue therapy, new challenges."},
+      407:{title:"Social Anxiety Crisis",description:"Social anxiety causing severe crisis requiring immediate help.",feelings:"Panicked, unable to function, desperate.",guidance:"Crisis intervention, safety planning, immediate therapy."},
+      408:{title:"Social Anxiety Therapy Needed",description:"Social anxiety requires professional therapeutic intervention.",feelings:"Overwhelmed, need professional guidance.",guidance:"Specialized anxiety therapy, exposure therapy."},
+      409:{title:"Social Skills Training Needed",description:"Social anxiety requires social skills development.",feelings:"Willing to learn, need skill building.",guidance:"Social skills groups, practice opportunities, mentoring."},
+      410:{title:"Social Anxiety Progress",description:"Making steady progress in managing social anxiety.",feelings:"Encouraged, supported, moving forward.",guidance:"Continue treatment, celebrate milestones, new goals."},
+      411:{title:"Strong Social Confidence",description:"Strong improvement in social confidence and skills.",feelings:"Confident, social, successful.",guidance:"Maintain progress, support others, leadership opportunities."},
+      412:{title:"Social Confidence Leader",description:"Exemplary social confidence, inspiring and helping others.",feelings:"Inspiring, confident, helping others.",guidance:"Mentor others, share strategies, continued growth."}
+    }
+  },
+  {
+    id:5,
+    title:"Learning Disabilities & Academic Struggles",
+    summary:"Student faces learning disabilities affecting reading, writing, math, or processing information.",
+    questions:[
+      {id:1, question:"Do you struggle with reading comprehension?", options:[{text:"Severely struggle",next:2},{text:"Moderately struggle",next:3},{text:"Mildly struggle",next:4},{text:"No struggle",next:5}]},
+      {id:2, question:"Do you have difficulty with written expression?", options:[{text:"Major difficulty",next:6},{text:"Moderate difficulty",next:7},{text:"Some difficulty",next:8},{text:"No difficulty",next:9}]},
+      {id:3, question:"Do you struggle with mathematical concepts?", options:[{text:"Severely struggle",next:6},{text:"Moderately struggle",next:7},{text:"Mildly struggle",next:8},{text:"No struggle",next:9}]},
+      {id:4, question:"Do you have trouble processing information quickly?", options:[{text:"Very slow processing",next:6},{text:"Slow processing",next:7},{text:"Average processing",next:8},{text:"Fast processing",next:9}]},
+      {id:5, question:"Do you struggle with memory and recall?", options:[{text:"Severe memory issues",next:6},{text:"Moderate memory issues",next:7},{text:"Mild memory issues",next:8},{text:"Good memory",next:9}]},
+      {id:6, question:"Do you need extra time to complete assignments?", options:[{text:"Always need extra time",next:10},{text:"Often need extra time",next:11},{text:"Sometimes need extra time",next:12},{text:"Rarely need extra time",next:13}]},
+      {id:7, question:"Do you have difficulty following multi-step instructions?", options:[{text:"Major difficulty",next:10},{text:"Moderate difficulty",next:11},{text:"Some difficulty",next:12},{text:"No difficulty",next:13}]},
+      {id:8, question:"Do you struggle with organization and planning?", options:[{text:"Severely disorganized",next:10},{text:"Moderately disorganized",next:11},{text:"Somewhat organized",next:12},{text:"Well organized",next:13}]},
+      {id:9, question:"Do you have trouble with spelling and grammar?", options:[{text:"Major spelling issues",next:10},{text:"Moderate spelling issues",next:11},{text:"Some spelling issues",next:12},{text:"Good spelling",next:13}]},
+      {id:10, question:"Do you feel frustrated with your academic performance?", options:[{text:"Constantly frustrated",next:14},{text:"Often frustrated",next:15},{text:"Sometimes frustrated",next:16},{text:"Rarely frustrated",next:17}]},
+      {id:11, question:"Do you avoid certain subjects due to difficulties?", options:[{text:"Avoid many subjects",next:14},{text:"Avoid some subjects",next:15},{text:"Avoid few subjects",next:16},{text:"Avoid no subjects",next:17}]},
+      {id:12, question:"Do you need visual or hands-on learning approaches?", options:[{text:"Always need visual",next:14},{text:"Often need visual",next:15},{text:"Sometimes need visual",next:16},{text:"Rarely need visual",next:17}]},
+      {id:13, question:"Do you work better in small groups or one-on-one?", options:[{text:"Always need individual",next:14},{text:"Prefer individual",next:15},{text:"Prefer small groups",next:16},{text:"Work well in any setting",next:17}]},
+      {id:14, question:"Do you have access to learning support services?", options:[{text:"No support",next:18},{text:"Limited support",next:19},{text:"Moderate support",next:20},{text:"Comprehensive support",next:20}]},
+      {id:15, question:"Do you use assistive technology or accommodations?", options:[{text:"No accommodations",next:18},{text:"Few accommodations",next:19},{text:"Some accommodations",next:20},{text:"Many accommodations",next:20}]},
+      {id:16, question:"Do you feel supported by teachers and staff?", options:[{text:"No support",next:18},{text:"Little support",next:19},{text:"Moderate support",next:20},{text:"Strong support",next:20}]},
+      {id:17, question:"Do you believe in your ability to succeed academically?", options:[{text:"No belief",next:18},{text:"Little belief",next:19},{text:"Some belief",next:20},{text:"Strong belief",next:20}]},
+      {id:18, question:"How do you approach challenging academic tasks?", options:[{text:"Avoid them",next:20},{text:"Struggle through",next:20},{text:"Seek help",next:20},{text:"Break them down",next:20}]},
+      {id:19, question:"Do you advocate for your learning needs?", options:[{text:"Never advocate",next:20},{text:"Rarely advocate",next:19},{text:"Sometimes advocate",next:20},{text:"Often advocate",next:20}]},
+      {id:20, question:"What best describes your learning disability situation?", options:[{text:"Severely impacted",next:501},{text:"Significantly challenged",next:502},{text:"Moderately affected",next:503},{text:"Mildly affected",next:504},{text:"Well accommodated",next:505},{text:"Thriving with support",next:506},{text:"Need assessment",next:507},{text:"Need accommodations",next:508},{text:"Need specialized instruction",next:509},{text:"Making progress",next:510},{text:"Strong success",next:511},{text:"Learning advocate",next:512}]}
+    ],
+    outcomes:{
+      501:{title:"Severe Learning Disability Impact",description:"Learning disabilities severely impair academic functioning.",feelings:"Frustrated, defeated, hopeless about academics.",guidance:"Comprehensive assessment, intensive support, alternative learning methods."},
+      502:{title:"Significant Learning Challenges",description:"Learning disabilities significantly affect academic performance.",feelings:"Struggling, anxious, need constant support.",guidance:"Specialized instruction, accommodations, regular monitoring."},
+      503:{title:"Moderate Learning Difficulties",description:"Learning disabilities moderately affect academic success.",feelings:"Challenged but motivated, some confidence.",guidance:"Targeted interventions, skill building, peer support."},
+      504:{title:"Mild Learning Differences",description:"Minor learning differences with good coping strategies.",feelings:"Confident in abilities, occasional challenges.",guidance:"Reinforce strengths, minor accommodations, self-advocacy."},
+      505:{title:"Well-Accommodated Learning",description:"Learning disabilities well-managed with proper accommodations.",feelings:"Successful, supported, confident.",guidance:"Maintain accommodations, continue success, advanced goals."},
+      506:{title:"Thriving with Learning Support",description:"Excelling academically with comprehensive learning support.",feelings:"Empowered, successful, inspiring.",guidance:"Continue support, share strategies, mentor others."},
+      507:{title:"Learning Disability Assessment Needed",description:"Suspected learning disability requires formal assessment.",feelings:"Confused, need answers, seeking help.",guidance:"Educational assessment, diagnosis, intervention planning."},
+      508:{title:"Learning Accommodations Needed",description:"Learning disabilities require academic accommodations.",feelings:"Capable but need different approach.",guidance:"Accommodation planning, implementation, monitoring."},
+      509:{title:"Specialized Instruction Needed",description:"Learning disabilities require specialized teaching methods.",feelings:"Willing to learn, need different strategies.",guidance:"Specialized instruction, multi-sensory approaches, skill building."},
+      510:{title:"Learning Progress",description:"Making steady progress in managing learning disabilities.",feelings:"Encouraged, supported, moving forward.",guidance:"Continue interventions, celebrate progress, new challenges."},
+      511:{title:"Learning Success",description:"Strong success in managing learning disabilities.",feelings:"Proud, confident, accomplished.",guidance:"Maintain strategies, support others, continued growth."},
+      512:{title:"Learning Disability Advocate",description:"Exemplary success, advocating for others with learning disabilities.",feelings:"Inspiring, empowered, helping others.",guidance:"Leadership opportunities, advocacy, continued excellence."}
+    }
+  },
+  {
+    id:6,
+    title:"Family Issues & Academic Impact",
+    summary:"Student faces family problems including divorce, financial stress, or family illness affecting academics.",
+    questions:[
+      {id:1, question:"Do family problems distract you from your studies?", options:[{text:"Constantly distracted",next:2},{text:"Often distracted",next:3},{text:"Sometimes distracted",next:4},{text:"Rarely distracted",next:5}]},
+      {id:2, question:"Do you worry about your family's financial situation?", options:[{text:"Constantly worried",next:6},{text:"Often worried",next:7},{text:"Sometimes worried",next:8},{text:"Rarely worried",next:9}]},
+      {id:3, question:"Do you have responsibilities at home that interfere with school?", options:[{text:"Major interference",next:6},{text:"Moderate interference",next:7},{text:"Some interference",next:8},{text:"No interference",next:9}]},
+      {id:4, question:"Do you feel stressed about family conflicts?", options:[{text:"Severely stressed",next:6},{text:"Moderately stressed",next:7},{text:"Mildly stressed",next:8},{text:"Not stressed",next:9}]},
+      {id:5, question:"Do you have to care for family members?", options:[{text:"Extensive caregiving",next:6},{text:"Moderate caregiving",next:7},{text:"Some caregiving",next:8},{text:"No caregiving",next:9}]},
+      {id:6, question:"Do you feel supported by your family in your education?", options:[{text:"No support",next:10},{text:"Little support",next:11},{text:"Moderate support",next:12},{text:"Strong support",next:13}]},
+      {id:7, question:"Do you have a stable home environment?", options:[{text:"Very unstable",next:10},{text:"Somewhat unstable",next:11},{text:"Moderately stable",next:12},{text:"Very stable",next:13}]},
+      {id:8, question:"Do you feel safe at home?", options:[{text:"Not safe",next:10},{text:"Sometimes unsafe",next:11},{text:"Mostly safe",next:12},{text:"Always safe",next:13}]},
+      {id:9, question:"Do you have privacy and space to study at home?", options:[{text:"No study space",next:10},{text:"Limited space",next:11},{text:"Adequate space",next:12},{text:"Excellent space",next:13}]},
+      {id:10, question:"Do you feel emotionally supported by family members?", options:[{text:"No emotional support",next:14},{text:"Little support",next:15},{text:"Moderate support",next:16},{text:"Strong support",next:17}]},
+      {id:11, question:"Do you communicate openly with family about school?", options:[{text:"Never communicate",next:14},{text:"Rarely communicate",next:15},{text:"Sometimes communicate",next:16},{text:"Often communicate",next:17}]},
+      {id:12, question:"Do you feel pressure from family regarding academic performance?", options:[{text:"Extreme pressure",next:14},{text:"High pressure",next:15},{text:"Moderate pressure",next:16},{text:"Low pressure",next:17}]},
+      {id:13, question:"Do you have family members who value education?", options:[{text:"No one values education",next:14},{text:"Few value education",next:15},{text:"Some value education",next:16},{text:"Most value education",next:17}]},
+      {id:14, question:"Do you seek help from school counselors about family issues?", options:[{text:"Never seek help",next:18},{text:"Rarely seek help",next:19},{text:"Sometimes seek help",next:20},{text:"Often seek help",next:20}]},
+      {id:15, question:"Do you have friends or mentors outside family for support?", options:[{text:"No outside support",next:18},{text:"Little outside support",next:19},{text:"Some outside support",next:20},{text:"Strong outside support",next:20}]},
+      {id:16, question:"Do you use any coping strategies for family stress?", options:[{text:"No coping strategies",next:18},{text:"Few strategies",next:19},{text:"Some strategies",next:20},{text:"Many strategies",next:20}]},
+      {id:17, question:"Do you believe you can succeed despite family challenges?", options:[{text:"No belief",next:18},{text:"Little belief",next:19},{text:"Some belief",next:20},{text:"Strong belief",next:20}]},
+      {id:18, question:"How do you handle family stress while maintaining academics?", options:[{text:"Poorly",next:20},{text:"With difficulty",next:20},{text:"Adequately",next:20},{text:"Well",next:20}]},
+      {id:19, question:"Do you advocate for your academic needs with family?", options:[{text:"Never advocate",next:20},{text:"Rarely advocate",next:19},{text:"Sometimes advocate",next:20},{text:"Often advocate",next:20}]},
+      {id:20, question:"What best describes your family situation impact?", options:[{text:"Severely impacted",next:601},{text:"Significantly affected",next:602},{text:"Moderately affected",next:603},{text:"Mildly affected",next:604},{text:"Managing well",next:605},{text:"Thriving despite challenges",next:606},{text:"Need crisis intervention",next:607},{text:"Need family therapy",next:608},{text:"Need community support",next:609},{text:"Making progress",next:610},{text:"Strong resilience",next:611},{text:"Family advocate",next:612}]}
+    ],
+    outcomes:{
+      601:{title:"Severe Family Impact",description:"Family issues severely impair academic functioning and wellbeing.",feelings:"Overwhelmed, hopeless, unable to focus on school.",guidance:"Crisis intervention, family therapy, academic accommodations."},
+      602:{title:"Significant Family Challenges",description:"Family problems significantly affect academic performance.",feelings:"Stressed, distracted, need constant support.",guidance:"Family counseling, academic support, stress management."},
+      603:{title:"Moderate Family Impact",description:"Family issues moderately affect academic success.",feelings:"Challenged but coping, some stability.",guidance:"Support groups, time management, family communication."},
+      604:{title:"Mild Family Stress",description:"Minor family stress with good coping mechanisms.",feelings:"Occasionally stressed, mostly functional.",guidance:"Stress management, family boundaries, self-care."},
+      605:{title:"Managing Family Challenges",description:"Successfully managing family issues while maintaining academics.",feelings:"Resilient, supported, maintaining balance.",guidance:"Continue current strategies, celebrate resilience."},
+      606:{title:"Thriving Despite Family Issues",description:"Excelling academically despite significant family challenges.",feelings:"Empowered, determined, inspiring.",guidance:"Support continued success, share strategies, mentor others."},
+      607:{title:"Family Crisis",description:"Family situation requires immediate crisis intervention.",feelings:"Desperate, unsafe, unable to function.",guidance:"Crisis counseling, safety planning, emergency resources."},
+      608:{title:"Family Therapy Needed",description:"Family issues require professional family therapy.",feelings:"Overwhelmed, need family healing.",guidance:"Family therapy, communication skills, conflict resolution."},
+      609:{title:"Community Support Needed",description:"Family challenges require community and social support.",feelings:"Isolated, need broader support network.",guidance:"Community resources, support groups, mentoring programs."},
+      610:{title:"Family Progress",description:"Making steady progress in managing family challenges.",feelings:"Hopeful, supported, moving forward.",guidance:"Continue support, celebrate progress, new goals."},
+      611:{title:"Family Resilience",description:"Strong resilience in managing family challenges.",feelings:"Proud, confident, accomplished.",guidance:"Maintain resilience, support others, continued growth."},
+      612:{title:"Family Advocate",description:"Exemplary resilience, advocating for others with family challenges.",feelings:"Inspiring, empowered, helping others.",guidance:"Leadership opportunities, advocacy, continued excellence."}
+    }
+  },
+  {
+    id:7,
+    title:"Substance Use & Academic Performance",
+    summary:"Student struggles with substance use affecting academic performance, relationships, and decision-making.",
+    questions:[
+      {id:1, question:"Do you use substances to cope with academic stress?", options:[{text:"Frequently",next:2},{text:"Sometimes",next:3},{text:"Rarely",next:4},{text:"Never",next:5}]},
+      {id:2, question:"Has substance use affected your academic performance?", options:[{text:"Severely affected",next:6},{text:"Moderately affected",next:7},{text:"Mildly affected",next:8},{text:"Not affected",next:9}]},
+      {id:3, question:"Do you miss classes due to substance use?", options:[{text:"Frequently miss",next:6},{text:"Sometimes miss",next:7},{text:"Rarely miss",next:8},{text:"Never miss",next:9}]},
+      {id:4, question:"Do you use substances before or during school?", options:[{text:"Regularly",next:6},{text:"Sometimes",next:7},{text:"Rarely",next:8},{text:"Never",next:9}]},
+      {id:5, question:"Do you feel you need substances to function?", options:[{text:"Always need",next:6},{text:"Often need",next:7},{text:"Sometimes need",next:8},{text:"Never need",next:9}]},
+      {id:6, question:"Do you hide your substance use from others?", options:[{text:"Always hide",next:10},{text:"Often hide",next:11},{text:"Sometimes hide",next:12},{text:"Rarely hide",next:13}]},
+      {id:7, question:"Do you feel guilty or ashamed about your substance use?", options:[{text:"Constantly guilty",next:10},{text:"Often guilty",next:11},{text:"Sometimes guilty",next:12},{text:"Rarely guilty",next:13}]},
+      {id:8, question:"Do you spend money on substances that should go to school?", options:[{text:"Frequently",next:10},{text:"Sometimes",next:11},{text:"Rarely",next:12},{text:"Never",next:13}]},
+      {id:9, question:"Do you have friends who also use substances?", options:[{text:"Most friends use",next:10},{text:"Some friends use",next:11},{text:"Few friends use",next:12},{text:"No friends use",next:13}]},
+      {id:10, question:"Do you want to stop or reduce your substance use?", options:[{text:"No desire to stop",next:14},{text:"Little desire",next:15},{text:"Some desire",next:16},{text:"Strong desire",next:17}]},
+      {id:11, question:"Do you have family members who use substances?", options:[{text:"Many family members",next:14},{text:"Some family members",next:15},{text:"Few family members",next:16},{text:"No family members",next:17}]},
+      {id:12, question:"Do you experience withdrawal symptoms when not using?", options:[{text:"Severe withdrawal",next:14},{text:"Moderate withdrawal",next:15},{text:"Mild withdrawal",next:16},{text:"No withdrawal",next:17}]},
+      {id:13, question:"Do you have access to substance abuse treatment?", options:[{text:"No access",next:14},{text:"Limited access",next:15},{text:"Some access",next:16},{text:"Good access",next:17}]},
+      {id:14, question:"Do you have supportive people who don't use substances?", options:[{text:"No supportive people",next:18},{text:"Few supportive people",next:19},{text:"Some supportive people",next:20},{text:"Many supportive people",next:20}]},
+      {id:15, question:"Do you participate in any recovery activities?", options:[{text:"No recovery activities",next:18},{text:"Few activities",next:19},{text:"Some activities",next:20},{text:"Many activities",next:20}]},
+      {id:16, question:"Do you believe you can overcome substance use?", options:[{text:"No belief",next:18},{text:"Little belief",next:19},{text:"Some belief",next:20},{text:"Strong belief",next:20}]},
+      {id:17, question:"Do you have goals for your future that don't involve substances?", options:[{text:"No future goals",next:18},{text:"Few goals",next:19},{text:"Some goals",next:20},{text:"Many goals",next:20}]},
+      {id:18, question:"How do you handle triggers for substance use?", options:[{text:"Use substances",next:20},{text:"Cope poorly",next:20},{text:"Cope adequately",next:20},{text:"Cope well",next:20}]},
+      {id:19, question:"Do you seek help for substance use issues?", options:[{text:"Never seek help",next:20},{text:"Rarely seek help",next:19},{text:"Sometimes seek help",next:20},{text:"Often seek help",next:20}]},
+      {id:20, question:"What best describes your substance use situation?", options:[{text:"Severe addiction",next:701},{text:"Significant problem",next:702},{text:"Moderate issue",next:703},{text:"Mild concern",next:704},{text:"In recovery",next:705},{text:"Thriving in recovery",next:706},{text:"Need crisis intervention",next:707},{text:"Need treatment",next:708},{text:"Need support group",next:709},{text:"Making progress",next:710},{text:"Strong recovery",next:711},{text:"Recovery advocate",next:712}]}
+    ],
+    outcomes:{
+      701:{title:"Severe Substance Addiction",description:"Severe substance addiction severely impairing all life areas.",feelings:"Hopeless, trapped, unable to function without substances.",guidance:"Immediate treatment, medical detox, intensive therapy."},
+      702:{title:"Significant Substance Problem",description:"Significant substance use problem affecting academics and life.",feelings:"Struggling, ashamed, need help but resistant.",guidance:"Comprehensive treatment, family therapy, academic support."},
+      703:{title:"Moderate Substance Issues",description:"Moderate substance use issues with some awareness.",feelings:"Concerned, motivated to change, seeking help.",guidance:"Counseling, support groups, harm reduction strategies."},
+      704:{title:"Mild Substance Concerns",description:"Minor substance use concerns with good insight.",feelings:"Aware, proactive, making positive changes.",guidance:"Prevention strategies, healthy alternatives, monitoring."},
+      705:{title:"Substance Recovery in Progress",description:"Actively working on substance recovery with good progress.",feelings:"Hopeful, determined, building new life.",guidance:"Continue treatment, celebrate milestones, build support."},
+      706:{title:"Thriving in Recovery",description:"Successful recovery from substance use, excelling in life.",feelings:"Empowered, proud, inspiring others.",guidance:"Maintain recovery, mentor others, continued growth."},
+      707:{title:"Substance Crisis",description:"Substance use causing severe crisis requiring immediate intervention.",feelings:"Desperate, unsafe, need immediate help.",guidance:"Crisis intervention, medical attention, safety planning."},
+      708:{title:"Substance Treatment Needed",description:"Substance use requires professional treatment intervention.",feelings:"Ready for help, need professional guidance.",guidance:"Treatment planning, detox if needed, therapy."},
+      709:{title:"Support Group Needed",description:"Substance use recovery would benefit from peer support.",feelings:"Isolated, need connection with others in recovery.",guidance:"Support groups, peer mentoring, community resources."},
+      710:{title:"Recovery Progress",description:"Making steady progress in substance use recovery.",feelings:"Encouraged, supported, moving forward.",guidance:"Continue treatment, celebrate progress, new goals."},
+      711:{title:"Strong Recovery",description:"Strong recovery from substance use with excellent coping.",feelings:"Proud, confident, accomplished.",guidance:"Maintain recovery, support others, continued growth."},
+      712:{title:"Recovery Advocate",description:"Exemplary recovery, inspiring and helping others.",feelings:"Inspiring, empowered, helping others recover.",guidance:"Leadership opportunities, advocacy, continued excellence."}
+    }
+  }];
+
+// ---------------- STATE ----------------
+let currentStep="selectScenario";
+let selectedScenario=null;
+let currentQuestionId=null;
+
+// ---------------- ELEMENT ----------------
+const container=document.getElementById("quiz-container");
+
+// ---------------- FUNCTIONS ----------------
+function render(){
+  container.innerHTML="";
+  if(currentStep==="selectScenario") renderScenarioSelection();
+  else if(currentStep==="summary") renderSummary();
+  else if(currentStep==="questions") renderQuestion();
+  else if(currentStep==="outcome") renderOutcome();
+}
+
+function renderScenarioSelection(){
+  const div=document.createElement("div"); div.className="scenario-selection";
+  div.innerHTML="<h2>Select a Scenario to Begin</h2>";
+  const ul=document.createElement("ul");
+  scenarios.forEach(s=>{
+    const li=document.createElement("li");
+    const btn=document.createElement("button");
+    btn.textContent=s.title;
+    btn.onclick=()=>{selectedScenario=s; currentStep="summary"; render();};
+    li.appendChild(btn); ul.appendChild(li);
+  });
+  div.appendChild(ul); container.appendChild(div);
+}
+
+function renderSummary(){
+  const div=document.createElement("div"); div.className="scenario-summary";
+  div.innerHTML=`<h2>${selectedScenario.title}</h2><p>${selectedScenario.summary}</p>`;
+  const startBtn=document.createElement("button"); startBtn.textContent="Start Questions";
+  startBtn.onclick=()=>{currentQuestionId=selectedScenario.questions[0].id; currentStep="questions"; render();};
+  const backBtn=document.createElement("button"); backBtn.textContent="Back"; backBtn.className="back-btn";
+  backBtn.onclick=()=>{selectedScenario=null; currentStep="selectScenario"; render();};
+  div.appendChild(startBtn); div.appendChild(backBtn); container.appendChild(div);
+}
+
+function renderQuestion(){
+  const q=selectedScenario.questions.find(q=>q.id===currentQuestionId);
+  if(!q) return;
+  const div=document.createElement("div"); div.className="questions";
+  div.innerHTML=`<h3>Question ${q.id}:</h3><p>${q.question}</p>`;
+  const optionsDiv=document.createElement("div"); optionsDiv.className="options";
+  q.options.forEach(opt=>{
+    const btn=document.createElement("button"); btn.textContent=opt.text;
+    btn.onclick=()=>{ 
+      if(opt.next>100) { currentQuestionId=opt.next; currentStep="outcome"; }
+      else currentQuestionId=opt.next;
+      render();
+    };
+    optionsDiv.appendChild(btn);
+  });
+  div.appendChild(optionsDiv);
+  const backBtn=document.createElement("button"); backBtn.textContent="Back"; backBtn.className="back-btn";
+  backBtn.onclick=()=>{
+    const prevIndex=selectedScenario.questions.findIndex(x=>x.id===currentQuestionId);
+    if(prevIndex>0) {currentQuestionId=selectedScenario.questions[prevIndex-1].id; render();}
+    else {currentStep="summary"; render();}
+  };
+  div.appendChild(backBtn);
+  container.appendChild(div);
+}
+
+function renderOutcome(){
+  const outcome=Object.values(selectedScenario.outcomes).find(o=>o===selectedScenario.outcomes[currentQuestionId]);
+  const div=document.createElement("div"); div.className="outcome";
+  const o=selectedScenario.outcomes[currentQuestionId];
+  div.innerHTML=`<h2>Result: ${o.title}</h2>
+    <p><strong>Description:</strong> ${o.description}</p>
+    <p><strong>Feelings:</strong> ${o.feelings}</p>
+    <p><strong>Guidance:</strong> ${o.guidance}</p>`;
+  const restartBtn=document.createElement("button"); restartBtn.textContent="Restart"; restartBtn.onclick=()=>{
+    currentStep="selectScenario"; selectedScenario=null; currentQuestionId=null; render();
+  };
+  div.appendChild(restartBtn); container.appendChild(div);
+}
+
+// ---------------- INITIAL RENDER ----------------
+render();
+</script>
 </body>
 </html>
