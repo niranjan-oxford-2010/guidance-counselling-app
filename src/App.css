@@ -48,4 +48,5 @@ header h1 {
 .questions .options {
   display: flex;
   flex-wrap: wrap;
+}
   gap: 10px;
