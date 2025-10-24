@@ -48,5 +48,5 @@ header h1 {
 .questions .options {
   display: flex;
   flex-wrap: wrap;
+  gap: 10px; /* move gap inside the braces */
 }
-  gap: 10px;
